@@ -136,6 +136,9 @@ async function submitUserMessage(content: string) {
     apiKey: openaiApiKey, // optional API key, default to env property OPENAI_API_KEY
   })
 
+  if (!openaiApiModel) {
+    throw new Error('OPENAI_API_MODEL is not defined');
+  }
 
   const result = await streamUI({
     model: openai.chat(openaiApiModel),
