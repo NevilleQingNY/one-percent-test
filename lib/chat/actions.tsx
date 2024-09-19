@@ -8,7 +8,8 @@ import {
   streamUI,
   createStreamableValue
 } from 'ai/rsc'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
+
 
 import {
   spinner,
@@ -126,8 +127,18 @@ async function submitUserMessage(content: string) {
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
 
+  const openaiApiBase = process.env.OPENAI_API_BASE
+  const openaiApiKey = process.env.OPENAI_API_KEY
+  let openaiApiModel = process.env.OPENAI_API_MODEL
+
+  const openai = createOpenAI({
+    baseURL: openaiApiBase, // optional base URL for proxies etc.
+    apiKey: openaiApiKey, // optional API key, default to env property OPENAI_API_KEY
+  })
+
+
   const result = await streamUI({
-    model: openai('gpt-3.5-turbo'),
+    model: openai.chat(openaiApiModel),
     initial: <SpinnerMessage />,
     system: `\
     You are a stock trading conversation bot and you can help users buy stocks, step by step.
