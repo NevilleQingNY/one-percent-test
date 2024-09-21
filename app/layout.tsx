@@ -13,14 +13,15 @@ export const metadata = {
     ? new URL(`https://${process.env.VERCEL_URL}`)
     : undefined,
   title: {
-    default: 'Next.js AI Chatbot',
-    template: `%s - Next.js AI Chatbot`
+    default: '1%商机搜索',
+    template: `%s - 1%商机搜索`
   },
-  description: 'An AI-powered chatbot template built with Next.js and Vercel.',
+  description: '帮助每一位超级个体发现、模仿、超越',
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png'
+    // 注意：这里的图标路径需要在未来更新
+    icon: '/onePercentIcon.png',
+    shortcut: '/onePercentIcon.png',
+    apple: '/onePercentIcon.png'
   }
 }
 

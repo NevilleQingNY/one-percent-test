@@ -1,12 +1,12 @@
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   IconGitHub,
-  IconNextChat,
   IconSeparator,
   IconVercel
 } from '@/components/ui/icons'
@@ -28,9 +28,21 @@ async function UserOrLogin() {
           <SidebarToggle />
         </>
       ) : (
-        <Link href="/new" rel="nofollow">
-          <IconNextChat className="size-6 mr-2 dark:hidden" inverted />
-          <IconNextChat className="hidden size-6 mr-2 dark:block" />
+        <Link href="/new" rel="nofollow" className="cursor-pointer">
+          <Image
+            src="/onePercentIcon.png"
+            alt="One Percent Icon"
+            width={24}
+            height={24}
+            className="mr-2 dark:hidden cursor-pointer"
+          />
+          <Image
+            src="/onePercentIcon.png"
+            alt="One Percent Icon"
+            width={24}
+            height={24}
+            className="hidden mr-2 dark:block cursor-pointer"
+          />
         </Link>
       )}
       <div className="flex items-center">
@@ -39,7 +51,7 @@ async function UserOrLogin() {
           <UserMenu user={session.user} />
         ) : (
           <Button variant="link" asChild className="-ml-2">
-            <Link href="/login">Login</Link>
+            <Link href="/login">登陆</Link>
           </Button>
         )}
       </div>
@@ -55,7 +67,7 @@ export function Header() {
           <UserOrLogin />
         </React.Suspense>
       </div>
-      <div className="flex items-center justify-end space-x-2">
+      {/* <div className="flex items-center justify-end space-x-2">
         <a
           target="_blank"
           href="https://github.com/vercel/nextjs-ai-chatbot/"
@@ -74,7 +86,7 @@ export function Header() {
           <span className="hidden sm:block">Deploy to Vercel</span>
           <span className="sm:hidden">Deploy</span>
         </a>
-      </div>
+      </div> */}
     </header>
   )
 }

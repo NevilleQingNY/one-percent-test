@@ -36,24 +36,20 @@ export function ChatPanel({
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: '抖音如何做流量？',
+      message: '抖音如何做流量？'
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: '餐饮行业如何做线上引流？',
+      message: '餐饮行业如何做线上引流？'
     },
     {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
+      heading: '知识付费怎么做？',
+      message: '知识付费怎么做？'
     },
     {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
+      heading: 'AI应用如何出海？',
+      message: 'AI应用如何出海？'
     }
   ]
 
@@ -93,9 +89,6 @@ export function ChatPanel({
                 }}
               >
                 <div className="text-sm font-semibold">{example.heading}</div>
-                <div className="text-sm text-zinc-600">
-                  {example.subheading}
-                </div>
               </div>
             ))}
         </div>
@@ -110,7 +103,7 @@ export function ChatPanel({
                     onClick={() => setShareDialogOpen(true)}
                   >
                     <IconShare className="mr-2" />
-                    Share
+                    分享
                   </Button>
                   <ChatShareDialog
                     open={shareDialogOpen}

@@ -2,7 +2,6 @@ import 'server-only'
 
 import {
   createAI,
-  createStreamableUI,
   getMutableAIState,
   getAIState,
   streamUI,
@@ -12,10 +11,8 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { streamText } from 'ai';
 
 import {
-  spinner,
   BotCard,
   BotMessage,
-  SystemMessage,
   Stock,
   Purchase
 } from '@/components/stocks'
@@ -27,8 +24,6 @@ import { StocksSkeleton } from '@/components/stocks/stocks-skeleton'
 import { Stocks } from '@/components/stocks/stocks'
 import { StockSkeleton } from '@/components/stocks/stock-skeleton'
 import {
-  formatNumber,
-  runAsyncFnWithoutBlocking,
   sleep,
   nanoid
 } from '@/lib/utils'
@@ -36,76 +31,8 @@ import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
-
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        正在购买 {amount} ${symbol}...
-      </p>
-    </div>
-  )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          正在购买 {amount} ${symbol}... 正在处理...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          您已成功购买 {amount} ${symbol}。总成本：{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        您已购买 {amount} 股 {symbol}，每股 {price}。总成本 ={' '}
-        {formatNumber(amount * price)}。
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages,
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[用户已购买 ${amount} 股 ${symbol}，每股 ${price}。总成本 = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
-}
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Progress } from "@/components/ui/progress"
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -143,19 +70,36 @@ async function submitUserMessage(content: string) {
   const result = await streamUI({
     model: openai.chat(openaiApiModel),
     initial: <SpinnerMessage />,
-    system: `你是一位商业案例分析专家。你的主要职能是协助用户查找和分析商业案例。
+    system: `你是一位顶尖的商业战略顾问，专长于案例分析和战略制定。基于提供的搜索结果，请完成以下任务：
 
-当用户询问商业案例或商业相关话题时：
-1. 始终使用'searchBusinessCase'工具来查找相关信息。
-2. 获得搜索结果后，总结关键点并提供见解。
+1. 案例综述（约 200 字）：
+   - 概括所有案例的核心主题和背景。
+   - 指出这些案例在商业领域的重要性和相关性。
 
-指导原则：
-- 对于任何商业相关的查询，你的第一步应该是使用'searchBusinessCase'工具。
-- 以清晰、简洁的方式分析和解释搜索结果。
-- 如果用户要求更多细节或有后续问题，请使用'searchBusinessCase'工具再次进行更精确的查询。
-- 根据找到的案例研究提供商业洞察和建议。
+2. 关键洞察（3-5 点，每点 50-100 字）：
+   - 深入分析各案例，提炼出最有价值的商业洞察。
+   - 找出案例间的共性和差异，突出其战略意义。
+   - 每个洞察都应该有清晰的论据支持，并引用相关案例。
 
-请记住，你的知识来源于搜索结果，所以始终依赖'searchBusinessCase'工具来获取准确和最新的信息。`,
+3. 战略建议（3-5 条，每条 100-150 字）：
+   - 基于以上分析，提出具体、可操作的战略建议。
+   - 详细阐述每个建议的实施步骤、预期效果和潜在风险。
+   - 解释这些建议如何应对当前的商业挑战或把握市场机遇。
+
+4. 行业趋势预测（约 150 字）：
+   - 根据案例分析，对相关行业未来发展做出预测。
+   - 指出可能的颠覆性变革和新兴机会。
+
+5. 案例启示总结（约 100 字）：
+   - 提炼出这些案例对企业决策者的核心启示。
+   - 强调如何将这些启示应用到实际商业运营中。
+
+注意事项：
+- 保持分析的客观性和专业性，使用准确的商业术语。
+- 确保每个观点都有数据或案例支持，增强可信度。
+- 使用简洁的数字引用格式，如 [1]、[2,3] 等，以标注案例来源。
+- 结构要清晰，便于阅读和理解，可使用小标题或编号。
+- 注重分析的实用性和可操作性，为决策者提供真正有价值的见解。`,
     messages: [
       ...aiState.get().messages.map((message: any) => ({
         role: message.role,
@@ -168,8 +112,8 @@ async function submitUserMessage(content: string) {
         textStream = createStreamableValue('')
         textNode = <BotMessage content={textStream.value} />
       }
-    
-      
+
+
       if (done) {
         // todo: 这里需要提升一下done的逻辑，放在这里会报错
         // textStream.done()
@@ -191,7 +135,7 @@ async function submitUserMessage(content: string) {
       return textNode
     },
     tools: {
-      searchBusinessCase: {
+      search: {
         description: '搜索与用户查询相关的商业案例。',
         parameters: z.object({
           query: z.string().describe('商业案例的搜索查询'),
@@ -199,10 +143,12 @@ async function submitUserMessage(content: string) {
         generate: async function* ({ query }) {
           yield (
             <BotCard>
-              <div>正在搜索商业案例...</div>
+              <div className="space-y-4">
+                <div className="text-lg font-medium text-purple-600">正在探索商机的海洋...</div>
+                <div className="text-sm text-muted-foreground italic">每一次搜索都是一次冒险，让我们共同发现未知的宝藏</div>
+              </div>
             </BotCard>
           )
-          
 
           let searchResult = null;
           try {
@@ -225,6 +171,7 @@ async function submitUserMessage(content: string) {
               images: data.images || [],
               number_of_results: data.number_of_results || 0
             };
+
           } catch (error) {
             console.error('Search API error:', error)
             searchResult = {
@@ -235,31 +182,111 @@ async function submitUserMessage(content: string) {
             }
           }
 
+          const references = searchResult.results.map((result: any, index: number) => ({
+            index: index + 1,
+            title: result.title,
+            url: result.url,
+            summary: result.summary || '',
+            favicon: `https://www.google.com/s2/favicons?domain=${new URL(result.url).hostname}`,
+          }));
+
+          yield (
+            <BotCard>
+              <div className="space-y-4">
+                <div className="text-lg font-medium text-pink-500">正在提炼商业智慧...</div>
+                <div className="text-sm text-muted-foreground italic">从繁复中寻找简约，为您呈现最精华的商业洞见</div>
+              </div>
+            </BotCard>
+          )
+
           const summaryStream = createStreamableValue('')
-          
-          ;(async () => {
-            const { textStream } = await streamText({
-              model: openai(openaiApiModel),
-              system: '你是一位商业案例分析专家。总结以下搜索结果。',
-              messages: [{ role: 'user', content: JSON.stringify(searchResult) }],
-            });
 
-            for await (const text of textStream) {
-              summaryStream.update(text);
-            }
+            ; (async () => {
+              const { textStream } = await streamText({
+                model: openai(openaiApiModel),
+                system: `你是一位顶尖的商业战略顾问，专长于案例分析和战略制定。基于提供的搜索结果，请完成以下任务：
 
-            summaryStream.done();
-          })();
+1. 案例综述（约 200 字）：
+   - 概括所有案例的核心主题和背景。
+   - 指出这些案例在商业领域的重要性和相关性。
 
-          return (
-            <div className="flex flex-col">
-              <div className="w-1/2 pr-2 border-b-8 border-red-500">
-                <pre>{JSON.stringify(searchResult, null, 2)}</pre>
-              </div>
-              <div className="w-1/2 pl-2">
+2. 关键洞察（3-5 点，每点 50-100 字）：
+   - 深入分析各案例，提炼出最有价值的商业洞察。
+   - 找出案例间的共性和差异，突出其战略意义。
+   - 每个洞察都应该有清晰的论据支持，并引用相关案例。
+
+3. 战略建议（3-5 条，每条 100-150 字）：
+   - 基于以上分析，提出具体、可操作的战略建议。
+   - 详细阐述每个建议的实施步骤、预期效果和潜在风险。
+   - 解释这些建议如何应对当前的商业挑战或把握市场机遇。
+
+4. 行业趋势预测（约 150 字）：
+   - 根据案例分析，对相关行业未来发展做出预测。
+   - 指出可能的颠覆性变革和新兴机会。
+
+5. 案例启示总结（约 100 字）：
+   - 提炼出这些案例对企业决策者的核心启示。
+   - 强调如何将这些启示应用到实际商业运营中。
+
+注意事项：
+- 保持分析的客观性和专业性，使用准确的商业术语。
+- 确保每个观点都有数据或案例支持，增强可信度。
+- 使用简洁的数字引用格式，如 [1]、[2,3] 等，以标注案例来源。
+- 结构要清晰，便于阅读和理解，可使用小标题或编号。
+- 注重分析的实用性和可操作性，为决策者提供真正有价值的见解。`,
+                messages: [{ role: 'user', content: JSON.stringify(searchResult) }],
+              });
+
+              for await (const text of textStream) {
+                summaryStream.update(text);
+              }
+
+              summaryStream.done();
+            })();
+
+          // Show incremental updates as the summary is being generated
+          let progress = 66;
+          while (!summaryStream.done) {
+            progress = Math.min(progress + 5, 95); // Increment progress, max 95%
+            yield (
+              <BotCard>
                 <BotMessage content={summaryStream.value} />
+                <div className="mt-2 space-y-2">
+                  <div>正在生成更多内容...</div>
+                  <Progress value={progress} className="w-full" />
+                </div>
+              </BotCard>
+            )
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait for 1 second before next update
+          }
+
+          // Final return with complete summary and references
+          return (
+            <BotCard>
+              <BotMessage content={summaryStream.value} />
+              <div className="h-px bg-gradient-to-r from-transparent via-purple-300 to-transparent my-4"></div>
+              <div className="mb-4">
+                <h3 className="font-bold mb-2">参考文献</h3>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2">
+                    {references.map((reference: any, index: number) => (
+                      <div key={index} className="flex items-center">
+                        <span className="mr-2 text-sm text-gray-500">{index + 1}.</span>
+                        <img src={reference.favicon} alt="favicon" className="w-4 h-4 mr-2" />
+                        <a
+                          href={reference.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-500 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 truncate"
+                        >
+                          {reference.title}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
-            </div>
+            </BotCard>
           )
         }
       }
@@ -677,7 +704,6 @@ export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
     submitUserMessage1,
-    confirmPurchase
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },

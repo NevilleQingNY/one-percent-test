@@ -1,36 +1,19 @@
-import { UseChatHelpers } from 'ai/react'
-
-import { Button } from '@/components/ui/button'
-import { ExternalLink } from '@/components/external-link'
-import { IconArrowRight } from '@/components/ui/icons'
-
 export function EmptyScreen() {
   return (
-    <div className="mx-auto max-w-2xl px-4">
-      <div className="flex flex-col gap-2 rounded-lg border bg-background p-8">
-        <h1 className="text-lg font-semibold">
-          Welcome to Next.js AI Chatbot!
+    <div className="mx-auto max-w-4xl px-4 py-12">
+      <div className="flex flex-col items-center gap-6">
+        <h1 className="text-center text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-400 bg-clip-text text-transparent animate-gradient-x">
+          1% 商机搜索
         </h1>
-        <p className="leading-normal text-muted-foreground">
-          This is an open source AI chatbot app template built with{' '}
-          <ExternalLink href="https://nextjs.org">Next.js</ExternalLink>, the{' '}
-          <ExternalLink href="https://sdk.vercel.ai">
-            Vercel AI SDK
-          </ExternalLink>
-          , and{' '}
-          <ExternalLink href="https://vercel.com/storage/kv">
-            Vercel KV
-          </ExternalLink>
-          .
+        <p className="text-center text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          帮助每一位超级个体
+          <span className="font-semibold text-purple-600 hover:text-purple-700 transition-colors duration-300">发现</span>、
+          <span className="font-semibold text-pink-500 hover:text-pink-600 transition-colors duration-300">模仿</span>、
+          <span className="font-semibold text-indigo-500 hover:text-indigo-600 transition-colors duration-300">超越</span>
         </p>
-        <p className="leading-normal text-muted-foreground">
-          It uses{' '}
-          <ExternalLink href="https://vercel.com/blog/ai-sdk-3-generative-ui">
-            React Server Components
-          </ExternalLink>{' '}
-          to combine text with generative UI as output of the LLM. The UI state
-          is synced through the SDK so the model is aware of your interactions
-          as they happen.
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-purple-300 to-transparent my-4 dark:via-purple-700"></div>
+        <p className="text-center text-sm text-muted-foreground italic">
+          探索无限可能，成就非凡未来
         </p>
       </div>
     </div>
